@@ -7,7 +7,7 @@ const authenticateToken = (req, res, next) => {
   try {
     token = req.headers["authorization"].split(" ").pop();
   } catch (error) {
-    return res.json({ message: error.toString() });
+    return res.json({ message: error.message });
   }
 
   if (!token) {

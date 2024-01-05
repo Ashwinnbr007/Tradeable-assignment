@@ -15,9 +15,11 @@ const app = express();
 const PORT = 3000;
 const secretKey = process.env.JWT_SECRET;
 const apiRouter = express.Router();
+const refferalRouter = express.Router();
 
 app.use(express.json());
 app.use("/api", apiRouter);
+app.use("/api/refferal", refferalRouter);
 
 connectToMongoDB();
 
@@ -72,8 +74,27 @@ apiRouter.post("/login", async (req, res) => {
   res.status(401).json({ message: "Invalid password. Try Again!" });
 });
 
-apiRouter.get("/protected", authenticateToken, (req, res) => {
-  res.json({ message: "This is a protected route", user: req.user });
+// Refferal routes
+refferalRouter.post("/generate", authenticateToken, async (req, res) => {
+  const { v4: uuidv4 } = require("uuid");
+  const refferalId = uuidv4();
+  const refferalLink = `0.0.0.0:3000/login/${refferalId}`;
+  const payload = {
+    username: req.user.username,
+    refferalId: refferalId,
+    refferalLink: refferalLink,
+    maxUses: 5,
+  };
+
+  try {
+    await uploadDataToDB(payload, "refferals", "refferal-details");
+  } catch (error) {
+    return res.status(500).json({ Error: error.message });
+  }
+
+  res.status(201).json({
+    message: `Refferal link generated ${refferalLink} for ${req.user.username}`,
+  });
 });
 
 app.listen(PORT, () => {
