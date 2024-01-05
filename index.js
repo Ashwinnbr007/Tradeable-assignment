@@ -14,8 +14,11 @@ const { connectToMongoDB } = require("./mongoConnection");
 const app = express();
 const PORT = 3000;
 const secretKey = process.env.JWT_SECRET;
+const apiRouter = express.Router();
 
 app.use(express.json());
+app.use("/api", apiRouter);
+
 connectToMongoDB();
 
 app.get("/", (req, res) => {
@@ -23,7 +26,7 @@ app.get("/", (req, res) => {
 });
 
 // Registeration and login
-app.post("/register", async (req, res) => {
+apiRouter.post("/register", async (req, res) => {
   const { username, password } = req.body;
   const hashedPassword = await bcryptPassword(password);
   const payload = {
@@ -44,7 +47,7 @@ app.post("/register", async (req, res) => {
   });
 });
 
-app.post("/login", async (req, res) => {
+apiRouter.post("/login", async (req, res) => {
   const { username, password } = req.body;
   let data;
   try {
@@ -69,7 +72,7 @@ app.post("/login", async (req, res) => {
   res.status(401).json({ message: "Invalid password. Try Again!" });
 });
 
-app.get("/protected", authenticateToken, (req, res) => {
+apiRouter.get("/protected", authenticateToken, (req, res) => {
   res.json({ message: "This is a protected route", user: req.user });
 });
 
