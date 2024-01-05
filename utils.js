@@ -1,6 +1,65 @@
 const { getClient } = require("./mongoConnection");
 const bcrypt = require("bcrypt");
-const { UsernameExistsError, UserDoesNotExistError } = require("./error");
+const EventEmitter = require("events");
+const {
+  UsernameExistsError,
+  UserDoesNotExistError,
+  RefferalDoesNotExistError,
+} = require("./error");
+const refferalRegistrationEvent = new EventEmitter();
+
+refferalRegistrationEvent.on("refferalUserRegistered", async (refferalId) => {
+  const refferalCollection = await getClient()
+    .db("refferals")
+    .collection("refferal-details");
+  const newRefferalState = await refferalCollection.findOneAndUpdate(
+    { refferalId: refferalId },
+    { $inc: { maxUses: -1 } },
+    { returnDocument: "after" }
+  );
+
+  if (newRefferalState.maxUses === 0) {
+    await refferalCollection.deleteOne({ refferalId: refferalId });
+  }
+});
+
+async function handleRegistration(req, res, refferalId) {
+  const { username, password } = req.body;
+  const hashedPassword = await bcryptPassword(password);
+  const payload = {
+    username: username,
+    password: hashedPassword,
+  };
+  try {
+    await uploadDataToDB(payload, "users", "login-details");
+    if (refferalId) {
+      refferalRegistrationEvent.emit("refferalUserRegistered", refferalId);
+    }
+    res.status(201).json({
+      message: "Successfully registered a new user",
+    });
+  } catch (error) {
+    if (error instanceof UsernameExistsError) {
+      return res.status(409).json({ Error: error.message });
+    }
+    return res.status(500).json({ Error: error.message });
+  }
+}
+
+async function verifyAndUpdateRefferalLink(refferalId) {
+  const refferalCollection = await getClient()
+    .db("refferals")
+    .collection("refferal-details");
+  const refferalExists = await refferalCollection.findOne({
+    refferalId: refferalId,
+  });
+
+  if (!refferalExists) {
+    throw new RefferalDoesNotExistError(
+      "The refferal link has either expired or doesn't exist, please use a different refferal link"
+    );
+  }
+}
 
 async function bcryptPassword(plainTextPassword) {
   const saltRounds = 10;
@@ -41,4 +100,6 @@ module.exports = {
   uploadDataToDB,
   retreiveDataFromDB,
   decryptPassword,
+  handleRegistration,
+  verifyAndUpdateRefferalLink,
 };

@@ -2,10 +2,11 @@ require("dotenv").config();
 const express = require("express");
 const { authenticateToken } = require("./middleware");
 const {
-  bcryptPassword,
   uploadDataToDB,
   retreiveDataFromDB,
   decryptPassword,
+  handleRegistration,
+  verifyAndUpdateRefferalLink,
 } = require("./utils");
 const errorModule = require("./error");
 const jwt = require("jsonwebtoken");
@@ -29,24 +30,16 @@ app.get("/", (req, res) => {
 
 // Registeration and login
 apiRouter.post("/register", async (req, res) => {
-  const { username, password } = req.body;
-  const hashedPassword = await bcryptPassword(password);
-  const payload = {
-    username: username,
-    password: hashedPassword,
-  };
+  await handleRegistration(req, res);
+});
+apiRouter.post("/register/:refferalId", async (req, res) => {
+  const referralId = req.params.refferalId.split(" ").pop();
   try {
-    await uploadDataToDB(payload, "users", "login-details");
+    await verifyAndUpdateRefferalLink(referralId);
   } catch (error) {
-    if (error instanceof errorModule.UsernameExistsError) {
-      return res.status(409).json({ Error: error.message });
-    }
-    return res.status(500).json({ Error: error.message });
+    return res.status(404).json({ Error: error.message });
   }
-
-  res.status(201).json({
-    message: "Successfully regsitered a new user",
-  });
+  await handleRegistration(req, res, referralId);
 });
 
 apiRouter.post("/login", async (req, res) => {
@@ -78,7 +71,7 @@ apiRouter.post("/login", async (req, res) => {
 refferalRouter.post("/generate", authenticateToken, async (req, res) => {
   const { v4: uuidv4 } = require("uuid");
   const refferalId = uuidv4();
-  const refferalLink = `0.0.0.0:3000/login/${refferalId}`;
+  const refferalLink = `0.0.0.0:3000/register/${refferalId}`;
   const payload = {
     username: req.user.username,
     refferalId: refferalId,
