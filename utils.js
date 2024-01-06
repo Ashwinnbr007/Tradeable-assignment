@@ -12,10 +12,17 @@ refferalRegistrationEvent.on("refferalUserRegistered", async (refferalId) => {
   const refferalCollection = await getClient()
     .db("refferals")
     .collection("refferal-details");
+  const walletCollection = await getClient()
+    .db("users")
+    .collection("wallet-balance");
   const newRefferalState = await refferalCollection.findOneAndUpdate(
     { refferalId: refferalId },
     { $inc: { maxUses: -1 } },
     { returnDocument: "after" }
+  );
+  await walletCollection.findOneAndUpdate(
+    { username: newRefferalState.username },
+    { $inc: { walletBalance: 5000 } }
   );
 
   if (newRefferalState.maxUses === 0) {
@@ -100,6 +107,7 @@ async function uploadDataToDB(payload, database, collectionName) {
   }
   await collection.insertOne(payload);
 }
+
 module.exports = {
   bcryptPassword,
   uploadDataToDB,

@@ -68,6 +68,7 @@ apiRouter.post("/login", async (req, res) => {
   res.status(401).json({ message: "Invalid password. Try Again!" });
 });
 
+// Balance
 apiRouter.get("/balance", authenticateToken, async (req, res) => {
   const { username } = req.user;
   let data;
