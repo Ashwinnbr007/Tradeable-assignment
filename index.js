@@ -32,6 +32,7 @@ app.get("/", (req, res) => {
 apiRouter.post("/register", async (req, res) => {
   await handleRegistration(req, res);
 });
+
 apiRouter.post("/register/:refferalId", async (req, res) => {
   const referralId = req.params.refferalId.split(" ").pop();
   try {
@@ -65,6 +66,23 @@ apiRouter.post("/login", async (req, res) => {
     });
   }
   res.status(401).json({ message: "Invalid password. Try Again!" });
+});
+
+apiRouter.get("/balance", authenticateToken, async (req, res) => {
+  const { username } = req.user;
+  let data;
+  try {
+    data = await retreiveDataFromDB(
+      { username: username },
+      "users",
+      "wallet-balance"
+    );
+  } catch (error) {
+    if (error instanceof errorModule.UserDoesNotExistError)
+      return res.status(404).json({ Error: error.message });
+    res.status(500).json({ Error: error.message });
+  }
+  res.json(data);
 });
 
 // Refferal routes

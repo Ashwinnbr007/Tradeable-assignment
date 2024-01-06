@@ -24,14 +24,19 @@ refferalRegistrationEvent.on("refferalUserRegistered", async (refferalId) => {
 });
 
 async function handleRegistration(req, res, refferalId) {
-  const { username, password } = req.body;
+  const { username, password, walletCredits } = req.body;
   const hashedPassword = await bcryptPassword(password);
-  const payload = {
+  const userRegistrationPayload = {
     username: username,
     password: hashedPassword,
   };
+  const walletRegistrationPayload = {
+    username: username,
+    walletBalance: walletCredits ? walletCredits : 0,
+  };
   try {
-    await uploadDataToDB(payload, "users", "login-details");
+    await uploadDataToDB(userRegistrationPayload, "users", "login-details");
+    await uploadDataToDB(walletRegistrationPayload, "users", "wallet-balance");
     if (refferalId) {
       refferalRegistrationEvent.emit("refferalUserRegistered", refferalId);
     }
