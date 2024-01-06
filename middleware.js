@@ -4,15 +4,10 @@ const authenticateToken = (req, res, next) => {
   const secretKey = process.env.JWT_SECRET;
   let token;
 
-  try {
-    token = req.headers["authorization"].split(" ").pop();
-  } catch (error) {
-    return res.json({ message: error.message });
-  }
+  if (!req.headers["authorization"])
+    return res.status(401).json({ message: "Unauthorized!" });
 
-  if (!token) {
-    return res.sendStatus(401); // Unauthorized
-  }
+  token = req.headers["authorization"].split(" ").pop();
 
   jwt.verify(token, secretKey, (err, user) => {
     if (err) {
