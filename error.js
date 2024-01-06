@@ -16,9 +16,16 @@ class RefferalDoesNotExistError extends Error {
     this.name = "RefferalDoesNotExistError";
   }
 }
+class CannotExpireRefferalError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "CannotExpireRefferalError";
+  }
+}
 
 module.exports = {
   UsernameExistsError,
   UserDoesNotExistError,
   RefferalDoesNotExistError,
+  CannotExpireRefferalError,
 };

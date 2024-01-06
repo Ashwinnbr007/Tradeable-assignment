@@ -5,6 +5,7 @@ const {
   UsernameExistsError,
   UserDoesNotExistError,
   RefferalDoesNotExistError,
+  CannotExpireRefferalError,
 } = require("./error");
 const refferalRegistrationEvent = new EventEmitter();
 
@@ -56,6 +57,28 @@ async function handleRegistration(req, res, refferalId) {
     }
     return res.status(500).json({ Error: error.message });
   }
+}
+
+async function authenicateAndExpireRefferalLink(username, refferalId) {
+  const refferalCollection = await getClient()
+    .db("refferals")
+    .collection("refferal-details");
+
+  const refferal = await refferalCollection.findOne({ refferalId: refferalId });
+
+  if (!refferal) {
+    throw new RefferalDoesNotExistError(
+      "The given refferal link doesn't exist"
+    );
+  }
+
+  if (refferal.username !== username) {
+    throw new CannotExpireRefferalError(
+      "The refferal link can only be expired by the owner of the link"
+    );
+  }
+
+  await refferalCollection.deleteOne({ refferalId: refferalId });
 }
 
 async function verifyRefferalLink(refferalId) {
@@ -116,4 +139,5 @@ module.exports = {
   decryptPassword,
   handleRegistration,
   verifyRefferalLink,
+  authenicateAndExpireRefferalLink,
 };

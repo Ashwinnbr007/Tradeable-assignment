@@ -7,6 +7,7 @@ const {
   decryptPassword,
   handleRegistration,
   verifyRefferalLink,
+  authenicateAndExpireRefferalLink,
 } = require("./utils");
 const errorModule = require("./error");
 const jwt = require("jsonwebtoken");
@@ -119,6 +120,25 @@ refferalRouter.post("/verify", async (req, res) => {
     return res.status(500).json({ Error: error.message });
   }
   return res.json({ message: "The refferal link is valid" });
+});
+
+refferalRouter.post("/expire", authenticateToken, async (req, res) => {
+  const { username } = req.user;
+  const { refferalLink } = req.body;
+  try {
+    await authenicateAndExpireRefferalLink(
+      username,
+      refferalLink.split("/").pop()
+    );
+  } catch (err) {
+    if (err instanceof errorModule.CannotExpireRefferalError) {
+      return res.status(401).json({ Error: err.message });
+    } else if (err instanceof errorModule.RefferalDoesNotExistError) {
+      return res.status(404).json({ Error: err.message });
+    }
+    return res.status(500).json({ Error: err.message });
+  }
+  res.json({ message: "Refferal link successfully removed" });
 });
 
 app.listen(PORT, () => {
