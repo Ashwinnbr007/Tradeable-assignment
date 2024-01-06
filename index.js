@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const rateLimitter = require("express-rate-limit");
 const { authenticateToken } = require("./middleware");
 const {
   uploadDataToDB,
@@ -19,6 +20,17 @@ const secretKey = process.env.JWT_SECRET;
 const apiRouter = express.Router();
 const refferalRouter = express.Router();
 
+// Rate limitting at the maximum rate of 5/min
+const limiter = rateLimitter({
+  windowMs: 1 * 60 * 1000,
+  max: 5,
+  handler: (req, res) => {
+    res.status(429).json({
+      Error: "Rate limit exceeded. Please try again later.",
+    });
+  },
+});
+
 app.use(express.json());
 app.use("/api", apiRouter);
 app.use("/api/refferal", refferalRouter);
@@ -30,11 +42,11 @@ app.get("/", (req, res) => {
 });
 
 // Registeration and login
-apiRouter.post("/register", async (req, res) => {
+apiRouter.post("/register", limiter, async (req, res) => {
   await handleRegistration(req, res);
 });
 
-apiRouter.post("/register/:refferalId", async (req, res) => {
+apiRouter.post("/register/:refferalId", limiter, async (req, res) => {
   const referralId = req.params.refferalId.split(" ").pop();
   try {
     await verifyRefferalLink(referralId);
@@ -88,29 +100,34 @@ apiRouter.get("/balance", authenticateToken, async (req, res) => {
 });
 
 // Refferal routes
-refferalRouter.post("/generate", authenticateToken, async (req, res) => {
-  const { v4: uuidv4 } = require("uuid");
-  const refferalId = uuidv4();
-  const refferalLink = `0.0.0.0:3000/register/${refferalId}`;
-  const payload = {
-    username: req.user.username,
-    refferalId: refferalId,
-    refferalLink: refferalLink,
-    maxUses: 5,
-  };
+refferalRouter.post(
+  "/generate",
+  authenticateToken,
+  limiter,
+  async (req, res) => {
+    const { v4: uuidv4 } = require("uuid");
+    const refferalId = uuidv4();
+    const refferalLink = `0.0.0.0:3000/register/${refferalId}`;
+    const payload = {
+      username: req.user.username,
+      refferalId: refferalId,
+      refferalLink: refferalLink,
+      maxUses: 5,
+    };
 
-  try {
-    await uploadDataToDB(payload, "refferals", "refferal-details");
-  } catch (error) {
-    return res.status(500).json({ Error: error.message });
+    try {
+      await uploadDataToDB(payload, "refferals", "refferal-details");
+    } catch (error) {
+      return res.status(500).json({ Error: error.message });
+    }
+
+    res.status(201).json({
+      message: `Refferal link generated ${refferalLink} for ${req.user.username}`,
+    });
   }
+);
 
-  res.status(201).json({
-    message: `Refferal link generated ${refferalLink} for ${req.user.username}`,
-  });
-});
-
-refferalRouter.post("/verify", async (req, res) => {
+refferalRouter.post("/verify", limiter, async (req, res) => {
   const { refferalLink } = req.body;
   try {
     await verifyRefferalLink(refferalLink.split("/").pop());
