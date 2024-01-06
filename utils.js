@@ -58,7 +58,7 @@ async function handleRegistration(req, res, refferalId) {
   }
 }
 
-async function verifyAndUpdateRefferalLink(refferalId) {
+async function verifyRefferalLink(refferalId) {
   const refferalCollection = await getClient()
     .db("refferals")
     .collection("refferal-details");
@@ -71,6 +71,7 @@ async function verifyAndUpdateRefferalLink(refferalId) {
       "The refferal link has either expired or doesn't exist, please use a different refferal link"
     );
   }
+  return true;
 }
 
 async function bcryptPassword(plainTextPassword) {
@@ -114,5 +115,5 @@ module.exports = {
   retreiveDataFromDB,
   decryptPassword,
   handleRegistration,
-  verifyAndUpdateRefferalLink,
+  verifyRefferalLink,
 };

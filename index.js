@@ -6,7 +6,7 @@ const {
   retreiveDataFromDB,
   decryptPassword,
   handleRegistration,
-  verifyAndUpdateRefferalLink,
+  verifyRefferalLink,
 } = require("./utils");
 const errorModule = require("./error");
 const jwt = require("jsonwebtoken");
@@ -36,7 +36,7 @@ apiRouter.post("/register", async (req, res) => {
 apiRouter.post("/register/:refferalId", async (req, res) => {
   const referralId = req.params.refferalId.split(" ").pop();
   try {
-    await verifyAndUpdateRefferalLink(referralId);
+    await verifyRefferalLink(referralId);
   } catch (error) {
     return res.status(404).json({ Error: error.message });
   }
@@ -107,6 +107,18 @@ refferalRouter.post("/generate", authenticateToken, async (req, res) => {
   res.status(201).json({
     message: `Refferal link generated ${refferalLink} for ${req.user.username}`,
   });
+});
+
+refferalRouter.post("/verify", async (req, res) => {
+  const { refferalLink } = req.body;
+  try {
+    await verifyRefferalLink(refferalLink.split("/").pop());
+  } catch (err) {
+    if (err instanceof errorModule.RefferalDoesNotExistError)
+      return res.status(404).json({ Error: "The refferal link is invalid" });
+    return res.status(500).json({ Error: error.message });
+  }
+  return res.json({ message: "The refferal link is valid" });
 });
 
 app.listen(PORT, () => {
