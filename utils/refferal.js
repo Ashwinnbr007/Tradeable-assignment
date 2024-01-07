@@ -4,7 +4,7 @@ const {
   RefferalDoesNotExistError,
   CannotExpireRefferalError,
 } = require("../error");
-const { v4: uuid4 } = require("uuid");
+const { v4: uuidv4 } = require("uuid");
 
 // refferalCollection outside functions
 // as it is used across functions

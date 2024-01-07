@@ -106,7 +106,7 @@ refferalRouter.post(
     }
 
     res.status(201).json({
-      message: `Refferal link generated ${refferalLink} for ${req.user.username}`,
+      message: `Refferal link generated ${refferalPayload.refferalLink} for ${req.user.username}`,
     });
   }
 );

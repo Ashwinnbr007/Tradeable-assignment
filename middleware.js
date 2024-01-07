@@ -1,6 +1,7 @@
 require("dotenv").config();
 const rateLimitter = require("express-rate-limit");
-const { jwt, TokenExpiredError } = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
+const { TokenExpiredError } = require("jsonwebtoken");
 
 // Rate limitting at the maximum rate of 5/min
 
