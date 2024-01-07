@@ -1,6 +1,20 @@
 require("dotenv").config();
+const rateLimitter = require("express-rate-limit");
+const { jwt, TokenExpiredError } = require("jsonwebtoken");
+
+// Rate limitting at the maximum rate of 5/min
+
+const limiter = rateLimitter({
+  windowMs: 1 * 60 * 1000,
+  max: 5,
+  handler: (req, res) => {
+    res.status(429).json({
+      Error: "Rate limit exceeded. Please try again later.",
+    });
+  },
+});
+
 const authenticateToken = (req, res, next) => {
-  const jwt = require("jsonwebtoken");
   const secretKey = process.env.JWT_SECRET;
   let token;
 
@@ -11,8 +25,11 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, secretKey, (err, user) => {
     if (err) {
-      console.log(err);
-      return res.sendStatus(403); // Forbidden
+      if (err instanceof TokenExpiredError)
+        return res
+          .status(403)
+          .json({ Error: "Your token has expired, please login again" }); // Forbidden
+      return res.status(500).json({ Error: err.message });
     }
 
     req.user = user;
@@ -20,4 +37,4 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-module.exports = { authenticateToken };
+module.exports = { authenticateToken, limiter };

@@ -1,36 +1,27 @@
 require("dotenv").config();
 const express = require("express");
-const rateLimitter = require("express-rate-limit");
-const { authenticateToken } = require("./middleware");
+// Middlewares
+const { authenticateToken, limiter } = require("./middleware");
+// Utils
+const { uploadDataToDB, retreiveDataFromDB } = require("./utils/database");
+const { decryptPassword, handleRegistration } = require("./utils/registration");
 const {
-  uploadDataToDB,
-  retreiveDataFromDB,
-  decryptPassword,
-  handleRegistration,
   verifyRefferalLink,
   authenicateAndExpireRefferalLink,
-} = require("./utils");
+} = require("./utils/refferal");
+// Custom errors
 const errorModule = require("./error");
-const jwt = require("jsonwebtoken");
+// DatabaseConnection
 const { connectToMongoDB } = require("./mongoConnection");
 
+const jwt = require("jsonwebtoken");
 const app = express();
 const PORT = 3000;
 const secretKey = process.env.JWT_SECRET;
+
+// Routers and global middlewares
 const apiRouter = express.Router();
 const refferalRouter = express.Router();
-
-// Rate limitting at the maximum rate of 5/min
-const limiter = rateLimitter({
-  windowMs: 1 * 60 * 1000,
-  max: 5,
-  handler: (req, res) => {
-    res.status(429).json({
-      Error: "Rate limit exceeded. Please try again later.",
-    });
-  },
-});
-
 app.use(express.json());
 app.use("/api", apiRouter);
 app.use("/api/refferal", refferalRouter);
