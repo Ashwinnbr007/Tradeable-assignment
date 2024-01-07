@@ -23,7 +23,7 @@ async function handleRegistration(req, res, refferalId) {
   };
   const walletRegistrationPayload = {
     username: username,
-    walletBalance: walletCredits ? walletCredits : 0,
+    walletCredits: walletCredits ? walletCredits : 0,
   };
   try {
     await uploadDataToDB(userRegistrationPayload, "users", "login-details");

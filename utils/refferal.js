@@ -23,7 +23,7 @@ refferalRegistrationEvent.on("refferalUserRegistered", async (refferalId) => {
   );
   await walletCollection.findOneAndUpdate(
     { username: newRefferalState.username },
-    { $inc: { walletBalance: 5000 } }
+    { $inc: { walletCredits: 5000 } }
   );
 
   if (newRefferalState.maxUses === 0) {
