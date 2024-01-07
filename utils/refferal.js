@@ -4,6 +4,7 @@ const {
   RefferalDoesNotExistError,
   CannotExpireRefferalError,
 } = require("../error");
+const { v4: uuid4 } = require("uuid");
 
 // refferalCollection outside functions
 // as it is used across functions
@@ -64,7 +65,20 @@ async function verifyRefferalLink(refferalId) {
   return true;
 }
 
+function generateRefferalPayload(username) {
+  const refferalId = uuid4();
+  const refferalLink = `0.0.0.0:3000/${refferalId}`;
+  const maxUses = 5;
+  return {
+    username,
+    refferalId,
+    refferalLink,
+    maxUses,
+  };
+}
+
 module.exports = {
   verifyRefferalLink,
   authenicateAndExpireRefferalLink,
+  generateRefferalPayload,
 };

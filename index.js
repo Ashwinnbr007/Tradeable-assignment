@@ -8,6 +8,7 @@ const { decryptPassword, handleRegistration } = require("./utils/registration");
 const {
   verifyRefferalLink,
   authenicateAndExpireRefferalLink,
+  generateRefferalPayload,
 } = require("./utils/refferal");
 // Custom errors
 const errorModule = require("./error");
@@ -96,18 +97,10 @@ refferalRouter.post(
   authenticateToken,
   limiter,
   async (req, res) => {
-    const { v4: uuidv4 } = require("uuid");
-    const refferalId = uuidv4();
-    const refferalLink = `0.0.0.0:3000/register/${refferalId}`;
-    const payload = {
-      username: req.user.username,
-      refferalId: refferalId,
-      refferalLink: refferalLink,
-      maxUses: 5,
-    };
+    const refferalPayload = await generateRefferalPayload(req.user.username);
 
     try {
-      await uploadDataToDB(payload, "refferals", "refferal-details");
+      await uploadDataToDB(refferalPayload, "refferals", "refferal-details");
     } catch (error) {
       return res.status(500).json({ Error: error.message });
     }
