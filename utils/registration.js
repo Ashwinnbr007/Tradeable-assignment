@@ -44,6 +44,7 @@ async function handleRegistration(req, res, refferalId) {
 
 module.exports = {
   handleRegistration,
+  bcryptPassword,
   refferalRegistrationEvent,
   decryptPassword,
 };
