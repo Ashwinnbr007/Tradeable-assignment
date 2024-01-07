@@ -7,7 +7,9 @@ test("test data retreival from database -> Should pass", async () => {
   const database = "users";
   const collection = "login-details";
   const data = await retreiveDataFromDB(dataToRetreive, database, collection);
-  return expect(data).toBeTruthy();
+  expect(data).toBeTruthy();
+  expect(data).toHaveProperty("username");
+  expect(data).toHaveProperty("password");
 });
 
 test("test data retreival from database -> Should not pass", async () => {
@@ -15,7 +17,7 @@ test("test data retreival from database -> Should not pass", async () => {
   const dataToRetreive = { username: randomJibberishUsername };
   const database = "users";
   const collection = "login-details";
-  return retreiveDataFromDB(dataToRetreive, database, collection).catch(
+  return await retreiveDataFromDB(dataToRetreive, database, collection).catch(
     (error) => {
       expect(error).toBeInstanceOf(UserDoesNotExistError);
     }

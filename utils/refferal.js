@@ -67,7 +67,7 @@ async function verifyRefferalLink(refferalId) {
 
 function generateRefferalPayload(username) {
   const refferalId = uuidv4();
-  const refferalLink = `0.0.0.0:3000/${refferalId}`;
+  const refferalLink = `0.0.0.0:3000/register/${refferalId}`;
   const maxUses = 5;
   return {
     username,
