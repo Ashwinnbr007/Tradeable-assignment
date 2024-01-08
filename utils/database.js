@@ -1,11 +1,22 @@
 const { UsernameExistsError, UserDoesNotExistError } = require("../error");
 const { getClient } = require("../mongoConnection");
 
-async function retreiveDataFromDB(dataToRetreive, database, collectionName) {
-  const data = await getClient()
-    .db(database)
-    .collection(collectionName)
-    .findOne(dataToRetreive);
+async function retreiveDataFromDB(
+  dataToRetreive,
+  database,
+  collectionName,
+  searchAll
+) {
+  const data = searchAll
+    ? await getClient()
+        .db(database)
+        .collection(collectionName)
+        .find(dataToRetreive)
+        .toArray()
+    : await getClient()
+        .db(database)
+        .collection(collectionName)
+        .findOne(dataToRetreive);
   if (!data) {
     throw new UserDoesNotExistError("The specific user does not exist");
   }

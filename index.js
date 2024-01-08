@@ -73,6 +73,41 @@ apiRouter.post("/login", async (req, res) => {
   res.status(401).json({ message: "Invalid password. Try Again!" });
 });
 
+apiRouter.get("/admin", authenticateToken, async (req, res) => {
+  const { username } = req.user;
+  const dataQuery = { username };
+  let userRefferalData, userBalanceData;
+  try {
+    userRefferalData = await retreiveDataFromDB(
+      dataQuery,
+      "refferals",
+      "refferal-details",
+      true
+    );
+    userBalanceData = await retreiveDataFromDB(
+      dataQuery,
+      "users",
+      "wallet-balance"
+    );
+    delete userBalanceData._id;
+    delete userBalanceData.username;
+    userRefferalData.map((data) => {
+      delete data._id;
+      delete data.username;
+    });
+  } catch (err) {
+    if (err instanceof UserDoesNotExistError) {
+      return res.status(404).json({ Error: err.message });
+    }
+    return res.status(500).json({ Error: err.message });
+  }
+  const finalUserData = {
+    refferals: userRefferalData,
+    balance: userBalanceData,
+  };
+  res.json(finalUserData);
+});
+
 // Balance
 apiRouter.get("/balance", authenticateToken, async (req, res) => {
   const { username } = req.user;
