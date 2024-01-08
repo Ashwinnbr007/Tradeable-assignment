@@ -46,7 +46,7 @@ You can view the entire collection of postman routes [here](https://app.getpostm
 
 8. `GET /api/admin` : The endpoint takes care of returning the entire details of a user. You must pass the jwt as headers to the endpoint else, the endpoint will not be accessible.
 
-Rate limiting has been setup so as to not overload the server with requests to the following endpoints :
+Rate limiting has been setup at the rate of 5 req/min so as to not overload the server with requests to the following endpoints :
 
 1. `POST /api/register`
 2. `POST /api/register/:refferalId`
