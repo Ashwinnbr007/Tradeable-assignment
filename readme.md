@@ -27,6 +27,8 @@ The app is served on `localhost:3000/`
 
 ### Routes
 
+You can view the entire collection of postman routes [here](https://app.getpostman.com/join-team?invite_code=1a59156cc62442d169351c5c3330c9b7&target_code=98437d2ea263b5133e4cfc222239c79d) 
+
 1. `POST /api/register` : The endpoint takes care of registering a user, the expected request body is 
     `{username:"your_username", password:"your_password"}`
 
