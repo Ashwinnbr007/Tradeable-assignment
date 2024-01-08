@@ -42,9 +42,9 @@ You can view the entire collection of postman routes [here](https://app.getpostm
 
 6. `POST /api/refferal/expire` : The endpoint takes care of expiring a refferal link. You must pass the jwt as headers to the endpoint else, the endpoint will not be accessible. Additionally, you cannot send any other users refferal link to expire. The expected request body is `{"refferalLink":"your_refferal_link"}`
 
-7. `POST /api/balance` : The endpoint takes care of returning the balance of a user. You must pass the jwt as headers to the endpoint else, the endpoint will not be accessible.
+7. `GET /api/balance` : The endpoint takes care of returning the balance of a user. You must pass the jwt as headers to the endpoint else, the endpoint will not be accessible.
 
-8. `POST /api/admin` : The endpoint takes care of returning the entire details of a user. You must pass the jwt as headers to the endpoint else, the endpoint will not be accessible.
+8. `GET /api/admin` : The endpoint takes care of returning the entire details of a user. You must pass the jwt as headers to the endpoint else, the endpoint will not be accessible.
 
 Rate limiting has been setup so as to not overload the server with requests to the following endpoints :
 
